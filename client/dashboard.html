@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Expense Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','ui-sans-serif'] },
+          colors: { brand: { 500:'#7c3aed', 600:'#6d28d9', 700:'#5b21b6' } }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-purple-600">
+  <!-- App Shell -->
+  <div class="grid grid-cols-12 min-h-screen">
+    <!-- Sidebar -->
+    <aside class="col-span-12 md:col-span-3 lg:col-span-2 border-r border-white/10 p-5 bg-slate-950/80">
+      <div class="flex items-center gap-2 mb-6">
+        <div class="h-8 w-8 rounded-xl bg-brand-600 shadow-brand"></div>
+        <h1 class="font-extrabold text-xl text-purple-700">SubTrackr</h1>
+      </div>
+
+      <nav class="space-y-1 text-purple-600">
+        <button class="nav-btn active" data-panel="dashboard">Dashboard</button>
+        <button class="nav-btn" data-panel="add">Add Expense</button>
+        <button class="nav-btn" data-panel="reports">Reports</button>
+        <button class="nav-btn" data-panel="settings">Settings</button>
+      </nav>
+
+      <div class="mt-8">
+        <button id="logout-btn" class="btn-ghost w-full text-purple-600">Log out</button>
+      </div>
+
+      <p class="text-xs text-purple-600 mt-6">Demo only • Data saved locally</p>
+    </aside>
+
+    <!-- Main -->
+    <main class="col-span-12 md:col-span-9 lg:col-span-10 p-6 md:p-8 space-y-6">
+      <!-- Topbar -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold text-purple-700">Dashboard</h2>
+          <p class="text-purple-600 text-sm" id="greet"></p>
+        </div>
+        <div class="flex items-center gap-3">
+          <input id="search" class="input !bg-slate-900/60 w-40 md:w-64 text-purple-600" placeholder="Search expenses..." />
+          <div class="h-10 w-10 rounded-full bg-slate-800 grid place-items-center border border-white/10">
+            <span class="text-sm text-purple-700" id="avatar">U</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <section id="panel-dashboard" class="panel grid gap-6 md:grid-cols-3">
+        <div class="kpi">
+          <div class="text-purple-600 text-sm">Your balance</div>
+          <div class="text-2xl font-extrabold mt-2 text-purple-700">₹ <span id="kpi-balance">0</span></div>
+        </div>
+        <div class="kpi">
+          <div class="text-purple-600 text-sm">This month spend</div>
+          <div class="text-2xl font-extrabold mt-2 text-purple-700">₹ <span id="kpi-month">0</span></div>
+        </div>
+        <div class="kpi">
+          <div class="text-purple-600 text-sm">Monthly budget</div>
+          <div class="text-2xl font-extrabold mt-2 text-purple-700">₹ <span id="kpi-budget">20000</span></div>
+        </div>
+
+        <!-- Charts & Calendar -->
+        <div class="rounded-2xl bg-slate-900/60 border border-white/10 p-4 md:p-6 md:col-span-2 neon-card">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-purple-700">Last 6 months spending</h3>
+            <div class="flex gap-2">
+              <button class="chip text-purple-600" data-range="6">6M</button>
+              <button class="chip active text-purple-600" data-range="12">12M</button>
+            </div>
+          </div>
+          <canvas id="lineChart" height="120"></canvas>
+        </div>
+
+        <div class="space-y-4">
+          <div class="rounded-2xl bg-slate-900/60 border border-white/10 p-4 neon-card">
+            <h3 class="font-semibold mb-2 text-purple-700">Category split</h3>
+            <canvas id="pieChart" height="180"></canvas>
+          </div>
+
+          <div class="rounded-2xl bg-slate-900/60 border border-white/10 p-4 neon-card">
+            <h3 class="font-semibold mb-2 text-purple-700">Calendar</h3>
+            <div id="calendar" class="calendar text-purple-600"></div>
+          </div>
+
+          <div class="rounded-2xl bg-slate-900/60 border border-white/10 p-4 neon-card">
+            <h3 class="font-semibold mb-2 text-purple-700">Upcoming (7 days)</h3>
+            <ul id="reminders" class="space-y-2 text-sm text-purple-600"></ul>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="rounded-2xl bg-slate-900/60 border border-white/10 p-4 md:p-6 md:col-span-3 neon-card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-purple-700">Recent Transactions</h3>
+            <div class="text-xs text-purple-600">Click ✖ to delete</div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-purple-600">
+              <thead class="text-purple-700">
+                <tr>
+                  <th class="th">Date</th>
+                  <th class="th">Category</th>
+                  <th class="th">Description</th>
+                  <th class="th text-right">Amount (₹)</th>
+                  <th class="th"></th>
+                </tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADD PANEL -->
+      <section id="panel-add" class="panel hidden">
+        <div class="rounded-2xl bg-slate-900/60 border border-white/10 p-6 neon-card max-w-2xl">
+          <h3 class="font-semibold text-xl mb-4 text-purple-700">Add Expense</h3>
+          <form id="add-form" class="grid md:grid-cols-2 gap-4 text-purple-600">
+            <div>
+              <label class="label text-purple-600">Amount (₹)</label>
+              <input id="ex-amount" type="number" min="1" class="input text-purple-600" required />
+            </div>
+            <div>
+              <label class="label text-purple-600">Category</label>
+              <select id="ex-category" class="input text-purple-600">
+                <option>Food</option>
+                <option>Travel</option>
+                <option>Shopping</option>
+                <option>Bills</option>
+                <option>Health</option>
+                <option>Education</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="label text-purple-600">Description</label>
+              <input id="ex-desc" class="input text-purple-600" placeholder="e.g., Zomato order" />
+            </div>
+            <div>
+              <label class="label text-purple-600">Date</label>
+              <input id="ex-date" type="date" class="input text-purple-600" required />
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="ex-remind" type="checkbox" class="h-4 w-4"/>
+              <label for="ex-remind" class="text-sm text-purple-600">Add to upcoming reminders</label>
+            </div>
+            <button class="btn-primary md:col-span-2 text-purple-600">Save Expense</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- REPORTS PANEL -->
+      <section id="panel-reports" class="panel hidden">
+        <div class="rounded-2xl bg-slate-900/60 border border-white/10 p-6 neon-card">
+          <h3 class="font-semibold text-xl mb-4 text-purple-700">Quick Reports</h3>
+          <ul class="list-disc list-inside text-purple-600 space-y-2">
+            <li>Top spending category this month: <span id="rep-topcat" class="font-semibold text-purple-700"></span></li>
+            <li>Average daily spend (30d): ₹ <span id="rep-avg" class="font-semibold text-purple-700"></span></li>
+            <li>Total transactions: <span id="rep-count" class="font-semibold text-purple-700"></span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- SETTINGS PANEL -->
+      <section id="panel-settings" class="panel hidden max-w-xl">
+        <div class="rounded-2xl bg-slate-900/60 border border-white/10 p-6 neon-card space-y-4">
+          <h3 class="font-semibold text-xl text-purple-700">Settings</h3>
+          <div>
+            <label class="label text-purple-600">Monthly Budget (₹)</label>
+            <input id="set-budget" type="number" class="input text-purple-600" placeholder="e.g., 20000" />
+            <button id="save-budget" class="btn-primary mt-3 text-purple-600">Save Budget</button>
+          </div>
+          <div>
+            <label class="label text-purple-600">Export Data</label>
+            <button id="export-json" class="btn-ghost text-purple-600">Download JSON</button>
+          </div>
+          <div class="text-xs text-purple-600">
+            Passwords are hashed and stored locally for demo purposes only.
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
+

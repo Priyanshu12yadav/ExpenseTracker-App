@@ -1,0 +1,5 @@
+# Ignore the server's node_modules folder
+/server/node_modules
+
+# Ignore the server's environment variables file (VERY IMPORTANT)
+/server/.env

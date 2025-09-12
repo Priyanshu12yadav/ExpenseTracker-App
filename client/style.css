@@ -1,0 +1,63 @@
+/* Global tweaks */
+:root { --ring: 0 0 0 2px rgba(124,58,237,.4); }
+* { scrollbar-width: thin; scrollbar-color: #4c1d95 #0f172a; }
+body { font-family: Inter, ui-sans-serif, system-ui; }
+
+/* Neon / glow */
+.neon-card { box-shadow: 0 10px 30px rgba(124,58,237,.15), inset 0 1px 0 rgba(255,255,255,.03); }
+.shadow-brand { box-shadow: 0 10px 30px rgba(124,58,237,.35); }
+
+/* Reusable UI atoms */
+.input {
+  @apply w-full rounded-xl border border-white/10 bg-slate-900/70 px-3 py-2 outline-none;
+}
+.input:focus { box-shadow: var(--ring); border-color: rgba(124,58,237,.5); }
+
+.label { @apply block text-sm text-slate-300 mb-1; }
+
+.btn-primary {
+  @apply rounded-xl bg-brand-600 hover:bg-brand-700 transition px-4 py-2 font-semibold;
+  box-shadow: 0 8px 24px rgba(124,58,237,.25);
+}
+.btn-ghost {
+  @apply rounded-xl bg-slate-900/60 hover:bg-slate-800 transition px-4 py-2 border border-white/10;
+}
+
+.tab-btn {
+  @apply flex-1 rounded-xl px-3 py-2 text-sm border border-white/10 bg-slate-900/60;
+}
+.tab-btn.active { border-color: rgba(124,58,237,.5); box-shadow: var(--ring); }
+
+.nav-btn {
+  @apply w-full text-left px-3 py-2 rounded-xl transition border border-transparent;
+}
+.nav-btn:hover { @apply bg-slate-900/60; border-color: rgba(124,58,237,.25); }
+.nav-btn.active { @apply bg-slate-900/80 border border-white/10; }
+
+.kpi {
+  @apply rounded-2xl p-4 bg-slate-900/60 border border-white/10 neon-card;
+}
+
+.th { @apply text-left py-2 px-2 border-b border-white/10; }
+
+.chip {
+  @apply text-xs px-2 py-1 rounded-lg bg-slate-800 border border-white/10;
+}
+.chip.active { border-color: rgba(124,58,237,.5); box-shadow: var(--ring); }
+
+/* Calendar grid */
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: .5rem;
+}
+.calendar .day {
+  padding: .6rem .4rem;
+  text-align: center;
+  border-radius: .6rem;
+  background: rgba(2,6,23,.6);
+  border: 1px solid rgba(255,255,255,.06);
+  font-size: .85rem;
+}
+.calendar .day.today { outline: 2px solid rgba(124,58,237,.6); }
+.calendar .day.mark { background: rgba(124,58,237,.18); border-color: rgba(124,58,237,.5); }
