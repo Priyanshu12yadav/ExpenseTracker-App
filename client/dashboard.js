@@ -159,14 +159,147 @@ function renderTable(filter = '') {
 // Chart, calendar, and reminder functions are identical to your original file.
 // Copy the renderCharts, buildMonthBuckets, renderCalendar, and renderReminders functions here.
 // (For brevity, they are not repeated here but you should paste them in)
+function renderCharts() {
+  // Pie: category totals
+  const byCat = {};
+  for (const e of expenses) byCat[e.category] = (byCat[e.category] || 0) + e.amount;
+  const pieLabels = Object.keys(byCat);
+  const pieData = Object.values(byCat);
+
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(pieEl, {
+    type: 'doughnut',
+    data: { labels: pieLabels, datasets: [{ data: pieData }] },
+    options: { plugins: { legend: { labels: { color: '#cbd5e1' } } } }
+  });
+
+  // Line: monthly totals (last N months)
+  const months = buildMonthBuckets(monthsRange); // [{label, key, total}]
+  for (const e of expenses) {
+    const key = e.date.slice(0,7);
+    const b = months.find(m => m.key === key);
+    if (b) b.total += e.amount;
+  }
+
+  if (lineChart) lineChart.destroy();
+  lineChart = new Chart(lineEl, {
+    type: 'line',
+    data: {
+      labels: months.map(m => m.label),
+      datasets: [{ data: months.map(m => m.total), tension: .4, fill: false }]
+    },
+    options: {
+      scales: {
+        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,.05)' } },
+        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,.05)' } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function buildMonthBuckets(n) {
+  const out = [];
+  const d = new Date();
+  d.setDate(1);
+  for (let i=n-1; i>=0; i--) {
+    const dt = new Date(d.getFullYear(), d.getMonth()-i, 1);
+    const key = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    out.push({ key, label: dt.toLocaleString('default', { month:'short' }) + ' ' + String(dt.getFullYear()).slice(2), total: 0 });
+  }
+  return out;
+}
+
+// chips to change range
+chipBtns.forEach(b => b.addEventListener('click', () => {
+  chipBtns.forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  monthsRange = parseInt(b.dataset.range, 10);
+  renderCharts();
+}));
+
+// Calendar (current month)
+function renderCalendar() {
+  calendar.innerHTML = '';
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = today.getMonth();
+
+  const first = new Date(y, m, 1);
+  const startDay = first.getDay(); // 0 Sun … 6 Sat
+  const daysInM = new Date(y, m+1, 0).getDate();
+
+  // weekday headers
+  ['S','M','T','W','T','F','S'].forEach(w => {
+    const el = document.createElement('div');
+    el.textContent = w;
+    el.className = 'text-xs text-slate-400 text-center';
+    calendar.appendChild(el);
+  });
+
+  // blanks
+  for (let i=0; i<startDay; i++) {
+    const el = document.createElement('div'); el.className=''; calendar.appendChild(el);
+  }
+
+  // dates
+  const marks = new Set(expenses.filter(e => {
+    const d = new Date(e.date); return d.getMonth() === m && d.getFullYear() === y;
+  }).map(e => new Date(e.date).getDate()));
+
+  for (let d=1; d<=daysInM; d++) {
+    const el = document.createElement('div');
+    el.textContent = d;
+    el.className = 'day';
+    if (d === today.getDate()) el.classList.add('today');
+    if (marks.has(d)) el.classList.add('mark');
+    calendar.appendChild(el);
+  }
+}
+
+function renderReminders() {
+  remindersList.innerHTML = '';
+  const now = new Date();
+  const in7 = new Date(now.getTime() + 7*86400000);
+  const upcoming = expenses
+    .filter(e => e.remind)
+    .filter(e => {
+      const dt = new Date(e.date);
+      return dt >= now && dt <= in7;
+    })
+    .sort((a,b)=> new Date(a.date)-new Date(b.date));
+
+  if (!upcoming.length) {
+    const li = document.createElement('li');
+    li.textContent = 'No upcoming reminders.';
+    li.className = 'text-slate-400';
+    remindersList.appendChild(li);
+    return;
+  }
+
+  for (const e of upcoming) {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="flex items-center justify-between rounded-lg px-3 py-2 bg-slate-800/60 border border-white/10">
+        <div>
+          <div class="font-medium">${e.category} — ₹ ${e.amount.toLocaleString('en-IN')}</div>
+          <div class="text-xs text-slate-400">${e.desc || 'No description'} • ${e.date}</div>
+        </div>
+        <span class="text-xs text-slate-300">Due</span>
+      </div>
+    `;
+    remindersList.appendChild(li);
+  }
+}
+
 
 // Master refresh
 function renderAll() {
   renderKPIs();
   renderTable(searchInput.value.trim().toLowerCase());
-  // renderCharts();
-  // renderCalendar();
-  // renderReminders();
+  renderCharts();
+  renderCalendar();
+  renderReminders();
 }
 
 // New function to fetch all data from server
