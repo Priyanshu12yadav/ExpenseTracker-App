@@ -1,7 +1,7 @@
 // client/app.js
 
 // This is the base URL of your backend server
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://expensetracker-api-jqol.onrender.com/api';
 
 /** CSV/JSON export utility */
 function download(filename, content, type = 'application/json') {
