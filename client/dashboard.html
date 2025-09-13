@@ -13,11 +13,137 @@
       theme: {
         extend: {
           fontFamily: { sans: ['Inter','ui-sans-serif'] },
-          colors: { brand: { 500:'#7c3aed', 600:'#6d28d9', 700:'#5b21b6' } }
+          colors: {
+            brand: {
+              400: '#9f7aea',
+              500: '#7c3aed',
+              600: '#6d28d9',
+              700: '#5b21b6',
+              800: '#4c1d95'
+            }
+          }
         }
       }
     }
   </script>
+
+  <style>
+    :root{
+      --brand-800:#4c1d95;
+      --brand-700:#5b21b6;
+      --brand-600:#6d28d9;
+      --brand-500:#7c3aed;
+      --accent-1:#c7b3ff; /* light lavender */
+      --accent-2:#b695ff; /* softer purple */
+      --muted:#9aa4b2;
+      --glass: rgba(255,255,255,0.03);
+    }
+
+    /* Remap a few common Tailwind text utilities to multiple theme shades for variety */
+    .text-purple-700 { color: var(--brand-700) !important; }
+    .text-purple-600 { color: var(--accent-2) !important; }
+    .text-purple-500 { color: var(--brand-500) !important; }
+    .text-purple-400 { color: var(--accent-1) !important; }
+
+    /* Button system to make UI more graceful */
+    .btn-primary{
+      background: linear-gradient(90deg, rgba(124,58,237,0.95), rgba(109,40,217,0.95));
+      color: #fff !important;
+      border-radius: .6rem;
+      padding: .55rem .9rem;
+      font-weight: 600;
+      box-shadow: 0 6px 18px rgba(109,40,217,0.18);
+      border: 1px solid rgba(255,255,255,0.04);
+      transition: transform .12s ease, box-shadow .12s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-primary:hover{ transform: translateY(-3px); box-shadow: 0 12px 30px rgba(109,40,217,0.22); }
+
+    .btn-ghost{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color: var(--accent-2) !important;
+      border: 1px solid rgba(124,58,237,0.14);
+      padding: .45rem .75rem;
+      border-radius: .55rem;
+      transition: background .12s ease, transform .12s ease;
+    }
+    .btn-ghost:hover{ background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(124,58,237,0.03)); transform: translateY(-2px); }
+
+    /* Pills / chips */
+    .chip{
+      background: transparent;
+      border: 1px solid rgba(124,58,237,0.12);
+      padding: .25rem .55rem;
+      border-radius: .5rem;
+      font-weight:600;
+      color: var(--accent-2) !important;
+      transition: background .12s ease, color .12s ease, transform .12s;
+    }
+    .chip.active{
+      background: linear-gradient(90deg, rgba(124,58,237,0.18), rgba(109,40,217,0.12));
+      color: #fff !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(93,26,155,0.12);
+    }
+
+    /* Sidebar nav buttons */
+    .nav-btn{
+      display:block;
+      width:100%;
+      text-align:left;
+      padding:.5rem .6rem;
+      border-radius:.5rem;
+      background:transparent;
+      color:var(--accent-2) !important;
+      font-weight:600;
+      border:1px solid transparent;
+      transition: background .12s ease, transform .12s ease, box-shadow .12s;
+    }
+    .nav-btn:hover{ background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(109,40,217,0.04)); transform: translateX(4px); }
+    .nav-btn.active{
+      background: linear-gradient(90deg, rgba(124,58,237,0.14), rgba(109,40,217,0.09));
+      color:#fff !important;
+      box-shadow: 0 10px 30px rgba(79,32,140,0.12);
+    }
+
+    /* Neon-like cards */
+    .neon-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(124,58,237,0.06);
+      box-shadow: 0 6px 24px rgba(92,25,151,0.06);
+    }
+
+    /* small utilities */
+    .kpi .text-purple-700 { font-size: 1.2rem; } /* keep KPIs bold */
+    .label { color: var(--accent-2) !important; font-weight:600; }
+    input.input, select.input {
+      background: rgba(255,255,255,0.01);
+      border:1px solid rgba(124,58,237,0.08);
+      color: var(--accent-1) !important;
+      padding:.5rem .6rem;
+      border-radius:.5rem;
+    }
+    input.input::placeholder { color: rgba(167,139,250,0.55); }
+
+    /* quick responsive avatar accent */
+    #avatar{
+      color: #fff !important;
+      background: linear-gradient(135deg, var(--brand-600), var(--brand-700));
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    /* ensure table headings remain distinct */
+    thead.text-purple-700 th { color: var(--brand-500) !important; }
+
+    /* subtle hover for table rows */
+    table tbody tr:hover td { background: rgba(124,58,237,0.02); }
+
+    /* ensure checkboxes remain visible */
+    input[type="checkbox"]{ accent-color: var(--brand-600); }
+  </style>
 </head>
 <body class="bg-slate-950 text-purple-600">
   <!-- App Shell -->
@@ -40,7 +166,7 @@
         <button id="logout-btn" class="btn-ghost w-full text-purple-600">Log out</button>
       </div>
 
-      <p class="text-xs text-purple-600 mt-6">Demo only • Data saved locally</p>
+
     </aside>
 
     <!-- Main -->

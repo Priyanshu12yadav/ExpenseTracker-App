@@ -44,6 +44,164 @@ let monthsRange = 12;
 greet.textContent = `Hello, ${me.first} — here’s your spending at a glance.`;
 avatar.textContent = (me.first?.[0] || 'U').toUpperCase();
 
+// Theme enhancements injected via JS so markup/format remains unchanged
+(function injectThemeEnhancements() {
+  const css = `
+    :root{
+      --bg-top: #071029;
+      --bg-bottom: #071a2b;
+      --card-bg: rgba(255,255,255,0.03);
+      --muted: #94a3b8;
+      --accent-a: #7c3aed;
+      --accent-b: #06b6d4;
+      --danger: #fb7185;
+      --glass: rgba(255,255,255,0.04);
+    }
+
+    body {
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+      color: #cbd5e1;
+      -webkit-font-smoothing:antialiased;
+      transition: background .45s ease, color .3s ease;
+      overflow-y: overlay;
+    }
+
+    /* Subtle entrance */
+    .theme-fade-in { animation: fadeInUp .45s ease both; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards / panels */
+    .panel, .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 6px 22px rgba(2,6,23,0.6);
+      border-radius: 12px;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .panel:hover { transform: translateY(-4px); box-shadow: 0 10px 36px rgba(2,6,23,0.72); }
+
+    /* Nav buttons */
+    .nav-btn {
+      background: transparent;
+      border-radius: 8px;
+      padding: 8px 12px;
+      transition: all .16s ease;
+      color: var(--muted);
+      border: 1px solid transparent;
+    }
+    .nav-btn:hover {
+      transform: translateY(-3px);
+      color: #e6eef8;
+      border-color: rgba(255,255,255,0.04);
+      background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(6,182,212,0.04));
+      box-shadow: 0 8px 24px rgba(7,12,28,0.5);
+    }
+    .nav-btn.active {
+      background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+      color: white;
+      box-shadow: 0 8px 30px rgba(7,12,28,0.6), inset 0 -6px 24px rgba(255,255,255,0.02);
+      transform: translateY(-3px);
+    }
+
+    /* Chips */
+    .chip {
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      border: 1px solid rgba(255,255,255,0.03);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 10px;
+    }
+    .chip:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(7,12,28,0.45); color: #e6eef8; }
+    .chip.active {
+      background: linear-gradient(90deg, rgba(124,58,237,0.18), rgba(6,182,212,0.12));
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(6,182,212,0.06);
+    }
+
+    /* Table rows and delete button */
+    #table-body tr td { transition: background .12s ease, transform .12s ease; }
+    #table-body tr:hover td { background: rgba(255,255,255,0.02); transform: translateX(6px); }
+    button[aria-label="Delete"] {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.03);
+      padding: 6px 8px;
+      border-radius: 8px;
+      color: var(--danger);
+      transition: transform .12s ease, background .12s ease, color .12s ease;
+    }
+    button[aria-label="Delete"]:hover {
+      transform: translateY(-2px) scale(1.02);
+      background: rgba(251,113,133,0.08);
+      color: #fff;
+    }
+
+    /* KPI styling */
+    #kpi-balance, #kpi-month, #kpi-budget {
+      font-weight: 700;
+      color: #f8fafc;
+      text-shadow: 0 4px 20px rgba(7,12,28,0.6);
+      transition: color .12s ease, transform .12s ease;
+    }
+    .kpi-card { padding: 14px; border-radius: 10px; }
+
+    /* Avatar float */
+    #avatar {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:40px;height:40px;border-radius:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: 0 10px 30px rgba(7,12,28,0.6);
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+      100% { transform: translateY(0); }
+    }
+
+    /* Calendar day marks & hover */
+    .day {
+      border-radius: 6px;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .day:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(6,11,20,0.6); }
+    .day.mark {
+      background: linear-gradient(180deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));
+      color: #fff;
+      box-shadow: inset 0 -6px 24px rgba(255,255,255,0.01);
+    }
+    .day.today {
+      outline: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 26px rgba(7,12,28,0.5);
+    }
+
+    /* Tiny subtle pulse for reminders list items */
+    #reminders li .flex { transition: transform .14s ease, box-shadow .14s ease; }
+    #reminders li .flex:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(7,12,28,0.5); }
+
+    /* Small responsive tweaks */
+    @media (max-width:640px) {
+      .nav-btn { padding: 6px 8px; font-size: 13px; }
+      #avatar { width:36px;height:36px; }
+    }
+  `;
+
+  const s = document.createElement('style');
+  s.setAttribute('data-theme-inject', 'dashboard-enhance');
+  s.innerHTML = css;
+  document.head.appendChild(s);
+
+  // Add theme class & fade-in
+  document.body.classList.add('theme-fade-in');
+  // remove the animation class after it completes to avoid interfering with other transitions
+  setTimeout(() => document.body.classList.remove('theme-fade-in'), 600);
+})();
+
 // Navigation
 navBtns.forEach(btn => {
   btn.addEventListener('click', () => {
